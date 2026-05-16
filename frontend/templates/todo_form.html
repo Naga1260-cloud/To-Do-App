@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Todo' if todo else 'New Todo' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-bottom py-3">
+        <h4 class="mb-0 fw-bold">
+          <i class="bi bi-{{ 'pencil-square' if todo else 'plus-circle' }} me-2"></i>
+          {{ 'Edit Todo' if todo else 'New Todo' }}
+        </h4>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" action="{{ action }}" novalidate>
+
+          <!-- Title -->
+          <div class="mb-3">
+            <label for="title" class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="title" name="title"
+                   value="{{ todo.title if todo else '' }}" required maxlength="255"
+                   placeholder="What needs to be done?" />
+            <div class="invalid-feedback">Title is required.</div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="description" class="form-label fw-semibold">Description</label>
+            <textarea class="form-control" id="description" name="description"
+                      rows="3" placeholder="Optional details...">{{ todo.description if todo and todo.description else '' }}</textarea>
+          </div>
+
+          <!-- Due Date & Priority row -->
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="due_date" class="form-label fw-semibold">Due Date</label>
+              <input type="date" class="form-control" id="due_date" name="due_date"
+                     value="{{ todo.due_date if todo and todo.due_date else '' }}" />
+            </div>
+            <div class="col-sm-6">
+              <label for="priority" class="form-label fw-semibold">Priority</label>
+              <select class="form-select" id="priority" name="priority">
+                <option value="low"    {{ 'selected' if todo and todo.priority == 'low'    else '' }}>🟢 Low</option>
+                <option value="medium" {{ 'selected' if (not todo) or (todo and todo.priority == 'medium') else '' }}>🟡 Medium</option>
+                <option value="high"   {{ 'selected' if todo and todo.priority == 'high'   else '' }}>🔴 High</option>
+              </select>
+            </div>
+          </div>
+
+          {% if todo %}
+          <!-- Edit-only fields -->
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="completed_date" class="form-label fw-semibold">Completed Date</label>
+              <input type="date" class="form-control" id="completed_date" name="completed_date"
+                     value="{{ todo.completed_date if todo.completed_date else '' }}" />
+            </div>
+            <div class="col-sm-6 d-flex align-items-end pb-1">
+              <div class="form-check form-switch ms-2">
+                <input class="form-check-input" type="checkbox" id="is_completed" name="is_completed"
+                       {{ 'checked' if todo.is_completed else '' }} style="width:2.5em;height:1.25em;" />
+                <label class="form-check-label ms-2 fw-semibold" for="is_completed">Completed</label>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Buttons -->
+          <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary flex-grow-1">
+              <i class="bi bi-{{ 'save' if todo else 'plus-lg' }} me-1"></i>
+              {{ 'Save Changes' if todo else 'Create Todo' }}
+            </button>
+            <a href="/" class="btn btn-outline-secondary flex-grow-1">
+              <i class="bi bi-x-circle me-1"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Bootstrap HTML5 validation
+  (() => {
+    'use strict';
+    const forms = document.querySelectorAll('form');
+    Array.from(forms).forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  })();
+</script>
+{% endblock %}
