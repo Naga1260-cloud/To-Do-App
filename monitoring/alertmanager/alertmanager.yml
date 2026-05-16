@@ -1,0 +1,45 @@
+global:
+  resolve_timeout: 5m
+  # Set SLACK_WEBHOOK_URL env var, or replace with your actual webhook URL
+  # slack_api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
+  slack_api_url: 'https://hooks.slack.com/services/placeholder/placeholder/placeholder'
+
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 10s
+  group_interval: 5m
+  repeat_interval: 3h
+  receiver: 'slack-notifications'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'slack-critical'
+      continue: true
+    - match:
+        severity: warning
+      receiver: 'slack-notifications'
+
+receivers:
+  - name: 'slack-notifications'
+    slack_configs:
+      - channel: '#alerts'
+        title: '{{ template "slack.title" . }}'
+        text: '{{ template "slack.text" . }}'
+        send_resolved: true
+        actions:
+          - type: button
+            text: 'View in Grafana'
+            url: 'http://localhost:3000'
+          - type: button
+            text: 'Silence Alert'
+            url: '{{ template "slack.silence.link" . }}'
+
+  - name: 'slack-critical'
+    slack_configs:
+      - channel: '#alerts-critical'
+        title: '🚨 CRITICAL: {{ template "slack.title" . }}'
+        text: '{{ template "slack.text" . }}'
+        send_resolved: true
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

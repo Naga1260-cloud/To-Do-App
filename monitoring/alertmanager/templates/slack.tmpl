@@ -1,0 +1,19 @@
+{{ define "slack.title" -}}
+  [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}
+{{- end }}
+
+{{ define "slack.text" -}}
+{{ range .Alerts -}}
+*Alert:* {{ .Annotations.summary }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+*Description:* {{ .Annotations.description }}
+*Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:>
+*Runbook:* {{ if .Annotations.runbook_url }}<{{ .Annotations.runbook_url }}|Runbook>{{ else }}N/A{{ end }}
+*Details:*
+  {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+  {{ end }}
+{{ end }}
+{{- end }}
+
+{{ define "slack.silence.link" -}}
+  {{ .ExternalURL }}/#/silences/new?filter=%7B{{ range .CommonLabels.SortedPairs }}{{ .Name }}%3D%22{{ .Value }}%22%2C{{ end }}%7D
+{{- end }}
