@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: todo-app-prod
+  labels:
+    environment: prod
+    app: todo-app
+    managed-by: kubectl

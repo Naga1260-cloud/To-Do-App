@@ -1,0 +1,42 @@
+# Ingress for AWS EKS using AWS Load Balancer Controller (ALB)
+# Prerequisites:
+#   - AWS Load Balancer Controller installed in the cluster
+#   - IAM OIDC provider configured for the cluster
+#   - Subnets tagged with: kubernetes.io/role/elb = 1
+#
+# After applying, get the ALB URL:
+#   kubectl get ingress todo-ingress -n todo-app
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: todo-ingress
+  namespace: todo-app
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    # Replace with your ACM certificate ARN for HTTPS:
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERT_ID
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-frontend
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-api
+                port:
+                  number: 8000

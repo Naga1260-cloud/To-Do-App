@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-db
+  namespace: todo-app
+  labels:
+    app: todo-db
+spec:
+  selector:
+    app: todo-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP

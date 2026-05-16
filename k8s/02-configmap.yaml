@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-config
+  namespace: todo-app
+data:
+  DB_NAME: "tododb"
+  DB_USER: "todouser"
+  DB_HOST: "todo-db"
+  DB_PORT: "5432"
+  API_BASE_URL: "http://todo-api:8000"

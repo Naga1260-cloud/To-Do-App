@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+  labels:
+    app: alertmanager
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+
+    route:
+      group_by: ['alertname', 'severity']
+      group_wait: 10s
+      group_interval: 5m
+      repeat_interval: 3h
+      receiver: 'slack-notifications'
+      routes:
+        - match:
+            severity: critical
+          receiver: 'slack-critical'
+          continue: true
+        - match:
+            severity: warning
+          receiver: 'slack-notifications'
+
+    receivers:
+      - name: 'slack-notifications'
+        slack_configs:
+          - channel: '#alerts'
+            api_url: '${SLACK_WEBHOOK_URL}'
+            title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
+
+      - name: 'slack-critical'
+        slack_configs:
+          - channel: '#alerts-critical'
+            api_url: '${SLACK_WEBHOOK_URL}'
+            title: '🚨 CRITICAL: {{ .CommonLabels.alertname }}'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
+
+  alert_rules.yml: |
+    groups:
+      - name: todo-app-alerts
+        interval: 30s
+        rules:
+          - alert: TodoAPIDown
+            expr: up{job="todo-api"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Todo API is down"
+              description: "The Todo API has been unreachable for more than 1 minute."
+
+          - alert: HighErrorRate
+            expr: |
+              (
+                rate(http_requests_total{job="todo-api", status=~"5.."}[5m])
+                /
+                rate(http_requests_total{job="todo-api"}[5m])
+              ) > 0.05
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High HTTP error rate"
+              description: "Error rate is above 5% for the last 5 minutes."
+
+          - alert: DatabaseDown
+            expr: pg_up == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "PostgreSQL database is down"
+              description: "The PostgreSQL exporter cannot reach the database."
+
+          - alert: HighDiskUsage
+            expr: |
+              (
+                node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"} - node_filesystem_free_bytes{fstype!~"tmpfs|fuse.lxcfs"}
+              ) / node_filesystem_size_bytes{fstype!~"tmpfs|fuse.lxcfs"} > 0.85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High disk usage (> 85%)"
+              description: "A filesystem is over 85% full."

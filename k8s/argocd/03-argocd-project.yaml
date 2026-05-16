@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: todo-project
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Todo App project — restricts source repos and destinations"
+
+  sourceRepos:
+    - https://github.com/YOUR_ORG/YOUR_REPO
+
+  destinations:
+    - namespace: todo-app
+      server: https://kubernetes.default.svc
+    - namespace: monitoring
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'networking.k8s.io'
+      kind: IngressClass
+
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  roles:
+    - name: developer
+      description: "Read-only access for developers"
+      policies:
+        - p, proj:todo-project:developer, applications, get, todo-project/*, allow
+        - p, proj:todo-project:developer, applications, sync, todo-project/*, allow
+      groups:
+        - developers
+
+    - name: admin
+      description: "Full access for platform team"
+      policies:
+        - p, proj:todo-project:admin, applications, *, todo-project/*, allow
+      groups:
+        - platform-team

@@ -1,0 +1,36 @@
+# Ingress for Minikube using NGINX Ingress Controller
+# Prerequisites: minikube addons enable ingress
+#
+# Access the app:
+#   minikube tunnel (runs in separate terminal), then open http://todo.local
+#   OR: add "$(minikube ip) todo.local" to /etc/hosts
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: todo-ingress
+  namespace: todo-app
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: todo.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-frontend
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: todo-api
+                port:
+                  number: 8000
