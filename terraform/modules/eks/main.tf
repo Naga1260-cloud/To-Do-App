@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 resource "aws_eks_cluster" "main" {
   name     = "${var.project_name}-${var.environment}"
   role_arn = aws_iam_role.eks_cluster.arn
-  version  = "1.29"
+  version  = var.eks_version
 
   vpc_config {
     subnet_ids              = var.private_subnet_ids
@@ -86,4 +86,10 @@ resource "aws_eks_node_group" "main" {
   ]
 
   tags = { Name = "${var.project_name}-${var.environment}-node-group" }
+}
+
+resource "aws_iam_openid_connect_provider" "eks_oidc_provider" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+  url             = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }

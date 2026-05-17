@@ -7,3 +7,7 @@ variable "node_instance_type"     { type = string }
 variable "desired_nodes"          { type = number }
 variable "min_nodes"              { type = number }
 variable "max_nodes"              { type = number }
+variable "eks_version" {
+  type    = string
+  default = "1.28"
+}
