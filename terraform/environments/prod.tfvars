@@ -1,0 +1,13 @@
+environment            = "prod"
+aws_region             = "us-east-1"
+vpc_cidr               = "10.2.0.0/16"
+db_instance_class      = "db.t3.medium"
+ec2_instance_type      = "t3.medium"
+eks_node_instance_type = "t3.large"
+eks_desired_nodes      = 3
+eks_min_nodes          = 2
+eks_max_nodes          = 10
+deploy_ec2             = false
+deploy_eks             = true
+deploy_cloudfront      = true
+enable_waf             = true

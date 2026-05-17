@@ -1,0 +1,11 @@
+environment            = "dev"
+aws_region             = "us-east-1"
+vpc_cidr               = "10.0.0.0/16"
+db_instance_class      = "db.t3.micro"
+ec2_instance_type      = "t3.micro"
+eks_node_instance_type = "t3.medium"
+eks_desired_nodes      = 1
+eks_min_nodes          = 1
+eks_max_nodes          = 2
+deploy_ec2             = true
+deploy_eks             = false
